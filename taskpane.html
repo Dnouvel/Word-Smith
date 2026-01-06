@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Synonym Finder</title>
+    <title>Word Smith</title>
     
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     
@@ -13,64 +13,59 @@
 <body>
     <div class="container">
         <header>
-            <h1>Synonym Finder</h1>
-            <p class="subtitle">Synonyms appear automatically as you type!</p>
+            <h1>Word Smith</h1>
+            <div class="auto-toggle">
+                <label class="toggle-label">
+                    <input type="checkbox" id="auto-fetch-toggle" checked />
+                    <span class="toggle-slider"></span>
+                </label>
+                <span id="auto-status" class="auto-status-text">Auto</span>
+            </div>
         </header>
-
-        <div class="auto-fetch-section">
-            <label class="toggle-label">
-                <input type="checkbox" id="auto-fetch-toggle" checked />
-                <span class="toggle-slider"></span>
-                <span class="toggle-text">Auto-fetch as I type</span>
-            </label>
-            <p id="auto-status" class="auto-status active">Auto-fetch: ON - Type in your document, synonyms appear automatically!</p>
-        </div>
 
         <div class="search-section">
             <div class="input-group">
-                <input type="text" id="word-input" placeholder="Or enter a word manually..." autocomplete="off" />
-                <button id="search-btn" class="btn-primary">Find</button>
+                <input type="text" id="word-input" placeholder="Enter a word..." autocomplete="off" />
+                <button id="search-btn" class="btn-primary">Go</button>
             </div>
-            <button id="get-selection-btn" class="btn-secondary">Get Selected Word</button>
+            <button id="get-selection-btn" class="btn-secondary">Get Selected</button>
         </div>
 
         <div id="loading" class="loading hidden">
             <div class="spinner"></div>
-            <span>Finding synonyms...</span>
         </div>
 
         <div id="results" class="results-container">
             <div id="current-word" class="current-word hidden">
-                <span class="label">Results for:</span>
                 <span id="searched-word" class="word"></span>
             </div>
 
-            <div id="synonyms-section" class="section hidden">
+            <div id="describing-section" class="section compact hidden">
+                <h2>Describing Words</h2>
+                <div id="describing-list" class="word-list compact"></div>
+            </div>
+
+            <div id="synonyms-section" class="section compact hidden">
                 <h2>Synonyms</h2>
-                <div id="synonyms-list" class="word-list"></div>
+                <div id="synonyms-list" class="word-list compact"></div>
             </div>
 
-            <div id="related-section" class="section hidden">
-                <h2>Related Words</h2>
-                <div id="related-list" class="word-list"></div>
+            <div id="related-section" class="section compact hidden">
+                <h2>Related</h2>
+                <div id="related-list" class="word-list compact"></div>
             </div>
 
-            <div id="similar-section" class="section hidden">
-                <h2>Similar Sounding</h2>
-                <div id="similar-list" class="word-list"></div>
+            <div id="similar-section" class="section compact hidden">
+                <h2>Sounds Like</h2>
+                <div id="similar-list" class="word-list compact"></div>
             </div>
 
             <div id="no-results" class="no-results hidden">
-                <p>No synonyms found for this word.</p>
-                <p class="hint">Try a different word or check the spelling.</p>
+                <p>No results found.</p>
             </div>
         </div>
 
         <div id="error-message" class="error hidden"></div>
-
-        <footer>
-            <p>Click any word to replace the current word in your document</p>
-        </footer>
     </div>
 
     <script src="taskpane.js"></script>

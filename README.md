@@ -1,16 +1,16 @@
-# Word Synonym Finder Add-in
+# Word Smith - MS Word Add-in
 
-An MS Word add-in that displays synonyms and related words in a side panel.
+An MS Word add-in that displays synonyms, describing words, and related words in a compact side panel as you type.
 
 ## Features
 
-- Search for synonyms by typing a word
-- Get selected word from your Word document
-- Three categories of results:
-  - **Synonyms**: Words with the same meaning
-  - **Related Words**: Conceptually related words
-  - **Similar Sounding**: Words that sound alike
-- Click any word to insert it into your document
+- **Auto-fetch** - Synonyms appear automatically as you type
+- **Describing Words** - Adjectives commonly used with your word (like describingwords.io)
+- **Synonyms** - Words with the same meaning
+- **Related Words** - Conceptually related words
+- **Similar Sounding** - Words that sound alike
+- **One-click insert** - Click any word to replace it in your document
+- **Compact design** - Small fonts to see all options at once
 
 ## Setup Instructions
 

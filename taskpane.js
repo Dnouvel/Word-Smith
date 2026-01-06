@@ -27,13 +27,7 @@ Office.onReady((info) => {
 
 function updateAutoFetchStatus() {
     const statusEl = document.getElementById('auto-status');
-    if (autoFetchEnabled) {
-        statusEl.textContent = 'Auto-fetch: ON - Type in your document, synonyms appear automatically!';
-        statusEl.className = 'auto-status active';
-    } else {
-        statusEl.textContent = 'Auto-fetch: OFF - Use manual search above';
-        statusEl.className = 'auto-status inactive';
-    }
+    statusEl.textContent = autoFetchEnabled ? 'Auto' : 'Manual';
 }
 
 function startAutoDetection() {
@@ -61,8 +55,7 @@ async function detectCurrentWord() {
                 return;
             }
             
-            const cursorPosition = findCursorPosition(paragraphText, selectionText);
-            const wordBeforeCursor = getWordBeforeCursor(paragraphText, cursorPosition);
+            const wordBeforeCursor = getWordBeforeCursor(paragraphText, paragraphText.length);
             
             if (wordBeforeCursor && 
                 wordBeforeCursor.length > 1 && 
@@ -79,24 +72,13 @@ async function detectCurrentWord() {
     }
 }
 
-function findCursorPosition(paragraphText, selectionText) {
-    return paragraphText.length;
-}
-
 function getWordBeforeCursor(text, cursorPos) {
     const textUpToCursor = text.substring(0, cursorPos).trim();
-    
     const lastSpaceIndex = textUpToCursor.lastIndexOf(' ');
     const lastNewlineIndex = textUpToCursor.lastIndexOf('\n');
     const lastSeparator = Math.max(lastSpaceIndex, lastNewlineIndex);
     
-    let word;
-    if (lastSeparator === -1) {
-        word = textUpToCursor;
-    } else {
-        word = textUpToCursor.substring(lastSeparator + 1);
-    }
-    
+    let word = lastSeparator === -1 ? textUpToCursor : textUpToCursor.substring(lastSeparator + 1);
     return word.replace(/[^a-zA-Z]/g, '').toLowerCase();
 }
 
@@ -109,7 +91,7 @@ async function autoSearch(word) {
     hideResults();
     
     try {
-        const results = await fetchSynonyms(word);
+        const results = await fetchAllWordData(word);
         displayResults(word, results);
     } catch (error) {
         console.error('Auto-search error:', error);
@@ -121,7 +103,7 @@ async function autoSearch(word) {
 
 async function getSelectedWord() {
     if (!isOfficeInitialized) {
-        document.getElementById('word-input').value = 'happy';
+        document.getElementById('word-input').value = 'ocean';
         handleSearch();
         return;
     }
@@ -143,7 +125,7 @@ async function getSelectedWord() {
             }
         });
     } catch (error) {
-        showError('Could not get selected text. Please select a word in your document.');
+        showError('Could not get selected text.');
         console.error('Error getting selection:', error);
     }
 }
@@ -153,7 +135,7 @@ async function handleSearch() {
     const word = input.value.trim().toLowerCase().replace(/[^a-zA-Z]/g, '');
     
     if (!word) {
-        showError('Please enter a word to search');
+        showError('Please enter a word');
         return;
     }
     
@@ -163,10 +145,10 @@ async function handleSearch() {
     hideResults();
     
     try {
-        const results = await fetchSynonyms(word);
+        const results = await fetchAllWordData(word);
         displayResults(word, results);
     } catch (error) {
-        showError('Failed to fetch synonyms. Please try again.');
+        showError('Failed to fetch. Try again.');
         console.error('Search error:', error);
     } finally {
         showLoading(false);
@@ -174,20 +156,23 @@ async function handleSearch() {
     }
 }
 
-async function fetchSynonyms(word) {
-    const [synonymsRes, relatedRes, similarRes] = await Promise.all([
+async function fetchAllWordData(word) {
+    const [describingRes, synonymsRes, relatedRes, similarRes] = await Promise.all([
+        fetch(`https://api.datamuse.com/words?rel_jjb=${encodeURIComponent(word)}&max=25`),
         fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=20`),
         fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(word)}&max=15`),
         fetch(`https://api.datamuse.com/words?sl=${encodeURIComponent(word)}&max=10`)
     ]);
     
-    const [synonyms, related, similar] = await Promise.all([
+    const [describing, synonyms, related, similar] = await Promise.all([
+        describingRes.json(),
         synonymsRes.json(),
         relatedRes.json(),
         similarRes.json()
     ]);
     
     return {
+        describing: describing.map(w => w.word),
         synonyms: synonyms.map(w => w.word),
         related: related.map(w => w.word).filter(w => !synonyms.some(s => s.word === w)),
         similar: similar.map(w => w.word).filter(w => w !== word)
@@ -198,33 +183,42 @@ function displayResults(word, results) {
     document.getElementById('searched-word').textContent = word;
     document.getElementById('current-word').classList.remove('hidden');
     
-    const hasResults = results.synonyms.length > 0 || results.related.length > 0 || results.similar.length > 0;
+    const hasResults = results.describing.length > 0 || results.synonyms.length > 0 || 
+                       results.related.length > 0 || results.similar.length > 0;
     
     if (!hasResults) {
         document.getElementById('no-results').classList.remove('hidden');
         return;
     }
     
+    if (results.describing.length > 0) {
+        const list = document.getElementById('describing-list');
+        list.innerHTML = results.describing.map(w => 
+            `<span class="word-chip describing" data-word="${w}">${w}</span>`
+        ).join('');
+        document.getElementById('describing-section').classList.remove('hidden');
+    }
+    
     if (results.synonyms.length > 0) {
-        const synonymsList = document.getElementById('synonyms-list');
-        synonymsList.innerHTML = results.synonyms.map(w => 
-            `<span class="word-chip" data-word="${w}">${w}</span>`
+        const list = document.getElementById('synonyms-list');
+        list.innerHTML = results.synonyms.map(w => 
+            `<span class="word-chip synonym" data-word="${w}">${w}</span>`
         ).join('');
         document.getElementById('synonyms-section').classList.remove('hidden');
     }
     
     if (results.related.length > 0) {
-        const relatedList = document.getElementById('related-list');
-        relatedList.innerHTML = results.related.map(w => 
-            `<span class="word-chip" data-word="${w}">${w}</span>`
+        const list = document.getElementById('related-list');
+        list.innerHTML = results.related.map(w => 
+            `<span class="word-chip related" data-word="${w}">${w}</span>`
         ).join('');
         document.getElementById('related-section').classList.remove('hidden');
     }
     
     if (results.similar.length > 0) {
-        const similarList = document.getElementById('similar-list');
-        similarList.innerHTML = results.similar.map(w => 
-            `<span class="word-chip" data-word="${w}">${w}</span>`
+        const list = document.getElementById('similar-list');
+        list.innerHTML = results.similar.map(w => 
+            `<span class="word-chip similar" data-word="${w}">${w}</span>`
         ).join('');
         document.getElementById('similar-section').classList.remove('hidden');
     }
@@ -236,7 +230,7 @@ function displayResults(word, results) {
 
 async function insertWord(word) {
     if (!isOfficeInitialized) {
-        alert(`Word to insert: "${word}"\n\nNote: This feature works when running inside MS Word.`);
+        alert(`Word: "${word}"\n\nWorks inside MS Word.`);
         return;
     }
     
@@ -268,7 +262,7 @@ async function insertWord(word) {
             }
         });
     } catch (error) {
-        showError('Failed to insert word. Please try again.');
+        showError('Failed to insert word.');
         console.error('Insert error:', error);
     }
 }
@@ -289,10 +283,12 @@ function hideError() {
 
 function hideResults() {
     document.getElementById('current-word').classList.add('hidden');
+    document.getElementById('describing-section').classList.add('hidden');
     document.getElementById('synonyms-section').classList.add('hidden');
     document.getElementById('related-section').classList.add('hidden');
     document.getElementById('similar-section').classList.add('hidden');
     document.getElementById('no-results').classList.add('hidden');
+    document.getElementById('describing-list').innerHTML = '';
     document.getElementById('synonyms-list').innerHTML = '';
     document.getElementById('related-list').innerHTML = '';
     document.getElementById('similar-list').innerHTML = '';

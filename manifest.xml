@@ -6,10 +6,10 @@
 
     <Id>a1b2c3d4-e5f6-7890-abcd-ef1234567890</Id>
     <Version>1.0.0.0</Version>
-    <ProviderName>Synonym Finder</ProviderName>
+    <ProviderName>Word Smith</ProviderName>
     <DefaultLocale>en-US</DefaultLocale>
-    <DisplayName DefaultValue="Synonym Finder"/>
-    <Description DefaultValue="Find synonyms and related words as you type in Word"/>
+    <DisplayName DefaultValue="Word Smith"/>
+    <Description DefaultValue="Find synonyms, describing words, and related words as you type"/>
     <SupportUrl DefaultValue="https://dnouvel.github.io/Word-Smith"/>
 
     <AppDomains>
