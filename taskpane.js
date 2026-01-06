@@ -1,13 +1,15 @@
 let isOfficeInitialized = false;
+let autoFetchEnabled = true;
+let lastDetectedWord = '';
+let isSearching = false;
 
-// Initialize Office.js
 Office.onReady((info) => {
     if (info.host === Office.HostType.Word) {
         isOfficeInitialized = true;
         console.log('Office.js initialized for Word');
+        startAutoDetection();
     }
     
-    // Set up event listeners
     document.getElementById('search-btn').addEventListener('click', handleSearch);
     document.getElementById('word-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -15,17 +17,110 @@ Office.onReady((info) => {
         }
     });
     document.getElementById('get-selection-btn').addEventListener('click', getSelectedWord);
+    document.getElementById('auto-fetch-toggle').addEventListener('change', (e) => {
+        autoFetchEnabled = e.target.checked;
+        updateAutoFetchStatus();
+    });
     
-    // Auto-detect selection changes
-    if (isOfficeInitialized) {
-        setInterval(checkSelection, 1500);
-    }
+    updateAutoFetchStatus();
 });
 
-// Get selected word from Word document
+function updateAutoFetchStatus() {
+    const statusEl = document.getElementById('auto-status');
+    if (autoFetchEnabled) {
+        statusEl.textContent = 'Auto-fetch: ON - Type in your document, synonyms appear automatically!';
+        statusEl.className = 'auto-status active';
+    } else {
+        statusEl.textContent = 'Auto-fetch: OFF - Use manual search above';
+        statusEl.className = 'auto-status inactive';
+    }
+}
+
+function startAutoDetection() {
+    setInterval(detectCurrentWord, 300);
+}
+
+async function detectCurrentWord() {
+    if (!isOfficeInitialized || !autoFetchEnabled || isSearching) return;
+    
+    try {
+        await Word.run(async (context) => {
+            const selection = context.document.getSelection();
+            selection.load('text');
+            
+            const range = selection.getRange('Start');
+            const paragraph = range.paragraphs.getFirst();
+            paragraph.load('text');
+            
+            await context.sync();
+            
+            const paragraphText = paragraph.text;
+            const selectionText = selection.text;
+            
+            if (selectionText && selectionText.trim().length > 0) {
+                return;
+            }
+            
+            const cursorPosition = findCursorPosition(paragraphText, selectionText);
+            const wordBeforeCursor = getWordBeforeCursor(paragraphText, cursorPosition);
+            
+            if (wordBeforeCursor && 
+                wordBeforeCursor.length > 1 && 
+                wordBeforeCursor !== lastDetectedWord &&
+                /^[a-zA-Z]+$/.test(wordBeforeCursor)) {
+                
+                lastDetectedWord = wordBeforeCursor;
+                document.getElementById('word-input').value = wordBeforeCursor;
+                await autoSearch(wordBeforeCursor);
+            }
+        });
+    } catch (error) {
+        console.log('Auto-detection cycle:', error.message);
+    }
+}
+
+function findCursorPosition(paragraphText, selectionText) {
+    return paragraphText.length;
+}
+
+function getWordBeforeCursor(text, cursorPos) {
+    const textUpToCursor = text.substring(0, cursorPos).trim();
+    
+    const lastSpaceIndex = textUpToCursor.lastIndexOf(' ');
+    const lastNewlineIndex = textUpToCursor.lastIndexOf('\n');
+    const lastSeparator = Math.max(lastSpaceIndex, lastNewlineIndex);
+    
+    let word;
+    if (lastSeparator === -1) {
+        word = textUpToCursor;
+    } else {
+        word = textUpToCursor.substring(lastSeparator + 1);
+    }
+    
+    return word.replace(/[^a-zA-Z]/g, '').toLowerCase();
+}
+
+async function autoSearch(word) {
+    if (isSearching) return;
+    isSearching = true;
+    
+    showLoading(true);
+    hideError();
+    hideResults();
+    
+    try {
+        const results = await fetchSynonyms(word);
+        displayResults(word, results);
+    } catch (error) {
+        console.error('Auto-search error:', error);
+    } finally {
+        showLoading(false);
+        isSearching = false;
+    }
+}
+
 async function getSelectedWord() {
     if (!isOfficeInitialized) {
-        // For testing outside Word, use a sample word
         document.getElementById('word-input').value = 'happy';
         handleSearch();
         return;
@@ -39,10 +134,10 @@ async function getSelectedWord() {
             
             const selectedText = selection.text.trim();
             if (selectedText) {
-                // Get first word if multiple words selected
                 const word = selectedText.split(/\s+/)[0].replace(/[^a-zA-Z]/g, '');
                 if (word) {
                     document.getElementById('word-input').value = word;
+                    lastDetectedWord = word.toLowerCase();
                     handleSearch();
                 }
             }
@@ -53,34 +148,6 @@ async function getSelectedWord() {
     }
 }
 
-// Check selection periodically for auto-update
-let lastCheckedWord = '';
-async function checkSelection() {
-    if (!isOfficeInitialized) return;
-    
-    try {
-        await Word.run(async (context) => {
-            const selection = context.document.getSelection();
-            selection.load('text');
-            await context.sync();
-            
-            const selectedText = selection.text.trim();
-            if (selectedText && selectedText.length < 30) {
-                const word = selectedText.split(/\s+/)[0].replace(/[^a-zA-Z]/g, '').toLowerCase();
-                if (word && word !== lastCheckedWord && word.length > 1) {
-                    lastCheckedWord = word;
-                    document.getElementById('word-input').value = word;
-                    // Optionally auto-search
-                    // handleSearch();
-                }
-            }
-        });
-    } catch (error) {
-        // Silently fail for background checks
-    }
-}
-
-// Main search function
 async function handleSearch() {
     const input = document.getElementById('word-input');
     const word = input.value.trim().toLowerCase().replace(/[^a-zA-Z]/g, '');
@@ -90,6 +157,7 @@ async function handleSearch() {
         return;
     }
     
+    isSearching = true;
     showLoading(true);
     hideError();
     hideResults();
@@ -102,12 +170,11 @@ async function handleSearch() {
         console.error('Search error:', error);
     } finally {
         showLoading(false);
+        isSearching = false;
     }
 }
 
-// Fetch synonyms from Datamuse API (free, no API key needed)
 async function fetchSynonyms(word) {
-    // Fetch multiple types of related words in parallel
     const [synonymsRes, relatedRes, similarRes] = await Promise.all([
         fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=20`),
         fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(word)}&max=15`),
@@ -127,7 +194,6 @@ async function fetchSynonyms(word) {
     };
 }
 
-// Display results
 function displayResults(word, results) {
     document.getElementById('searched-word').textContent = word;
     document.getElementById('current-word').classList.remove('hidden');
@@ -139,7 +205,6 @@ function displayResults(word, results) {
         return;
     }
     
-    // Display synonyms
     if (results.synonyms.length > 0) {
         const synonymsList = document.getElementById('synonyms-list');
         synonymsList.innerHTML = results.synonyms.map(w => 
@@ -148,7 +213,6 @@ function displayResults(word, results) {
         document.getElementById('synonyms-section').classList.remove('hidden');
     }
     
-    // Display related words
     if (results.related.length > 0) {
         const relatedList = document.getElementById('related-list');
         relatedList.innerHTML = results.related.map(w => 
@@ -157,7 +221,6 @@ function displayResults(word, results) {
         document.getElementById('related-section').classList.remove('hidden');
     }
     
-    // Display similar sounding words
     if (results.similar.length > 0) {
         const similarList = document.getElementById('similar-list');
         similarList.innerHTML = results.similar.map(w => 
@@ -166,13 +229,11 @@ function displayResults(word, results) {
         document.getElementById('similar-section').classList.remove('hidden');
     }
     
-    // Add click handlers to word chips
     document.querySelectorAll('.word-chip').forEach(chip => {
         chip.addEventListener('click', () => insertWord(chip.dataset.word));
     });
 }
 
-// Insert word into Word document
 async function insertWord(word) {
     if (!isOfficeInitialized) {
         alert(`Word to insert: "${word}"\n\nNote: This feature works when running inside MS Word.`);
@@ -182,8 +243,29 @@ async function insertWord(word) {
     try {
         await Word.run(async (context) => {
             const selection = context.document.getSelection();
-            selection.insertText(word, Word.InsertLocation.replace);
+            const range = selection.getRange('Start');
+            const paragraph = range.paragraphs.getFirst();
+            paragraph.load('text');
             await context.sync();
+            
+            const paragraphText = paragraph.text;
+            const wordToReplace = lastDetectedWord;
+            
+            if (wordToReplace && paragraphText.toLowerCase().includes(wordToReplace)) {
+                const searchResults = context.document.body.search(wordToReplace, { matchCase: false, matchWholeWord: true });
+                searchResults.load('items');
+                await context.sync();
+                
+                if (searchResults.items.length > 0) {
+                    const lastMatch = searchResults.items[searchResults.items.length - 1];
+                    lastMatch.insertText(word, Word.InsertLocation.replace);
+                    await context.sync();
+                    lastDetectedWord = word.toLowerCase();
+                }
+            } else {
+                selection.insertText(word, Word.InsertLocation.replace);
+                await context.sync();
+            }
         });
     } catch (error) {
         showError('Failed to insert word. Please try again.');
@@ -191,7 +273,6 @@ async function insertWord(word) {
     }
 }
 
-// UI helper functions
 function showLoading(show) {
     document.getElementById('loading').classList.toggle('hidden', !show);
 }

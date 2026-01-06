@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Synonym Finder</title>
     
-    <!-- Office.js -->
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     
     <link href="taskpane.css" rel="stylesheet" />
@@ -15,12 +14,21 @@
     <div class="container">
         <header>
             <h1>Synonym Finder</h1>
-            <p class="subtitle">Select a word or type below to find synonyms</p>
+            <p class="subtitle">Synonyms appear automatically as you type!</p>
         </header>
+
+        <div class="auto-fetch-section">
+            <label class="toggle-label">
+                <input type="checkbox" id="auto-fetch-toggle" checked />
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Auto-fetch as I type</span>
+            </label>
+            <p id="auto-status" class="auto-status active">Auto-fetch: ON - Type in your document, synonyms appear automatically!</p>
+        </div>
 
         <div class="search-section">
             <div class="input-group">
-                <input type="text" id="word-input" placeholder="Enter a word..." autocomplete="off" />
+                <input type="text" id="word-input" placeholder="Or enter a word manually..." autocomplete="off" />
                 <button id="search-btn" class="btn-primary">Find</button>
             </div>
             <button id="get-selection-btn" class="btn-secondary">Get Selected Word</button>
@@ -61,7 +69,7 @@
         <div id="error-message" class="error hidden"></div>
 
         <footer>
-            <p>Click any word to insert it into your document</p>
+            <p>Click any word to replace the current word in your document</p>
         </footer>
     </div>
 
