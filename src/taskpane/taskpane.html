@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Synonym Finder</title>
+    
+    <!-- Office.js -->
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    
+    <link href="taskpane.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Synonym Finder</h1>
+            <p class="subtitle">Select a word or type below to find synonyms</p>
+        </header>
+
+        <div class="search-section">
+            <div class="input-group">
+                <input type="text" id="word-input" placeholder="Enter a word..." autocomplete="off" />
+                <button id="search-btn" class="btn-primary">Find</button>
+            </div>
+            <button id="get-selection-btn" class="btn-secondary">Get Selected Word</button>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <span>Finding synonyms...</span>
+        </div>
+
+        <div id="results" class="results-container">
+            <div id="current-word" class="current-word hidden">
+                <span class="label">Results for:</span>
+                <span id="searched-word" class="word"></span>
+            </div>
+
+            <div id="synonyms-section" class="section hidden">
+                <h2>Synonyms</h2>
+                <div id="synonyms-list" class="word-list"></div>
+            </div>
+
+            <div id="related-section" class="section hidden">
+                <h2>Related Words</h2>
+                <div id="related-list" class="word-list"></div>
+            </div>
+
+            <div id="similar-section" class="section hidden">
+                <h2>Similar Sounding</h2>
+                <div id="similar-list" class="word-list"></div>
+            </div>
+
+            <div id="no-results" class="no-results hidden">
+                <p>No synonyms found for this word.</p>
+                <p class="hint">Try a different word or check the spelling.</p>
+            </div>
+        </div>
+
+        <div id="error-message" class="error hidden"></div>
+
+        <footer>
+            <p>Click any word to insert it into your document</p>
+        </footer>
+    </div>
+
+    <script src="taskpane.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "word-synonym-addin",
+  "version": "1.0.0",
+  "description": "MS Word Add-in that displays synonyms and related words",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "office",
+    "word",
+    "add-in",
+    "synonyms",
+    "thesaurus"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
