@@ -23,18 +23,12 @@ An MS Word add-in that displays synonyms and related words in a side panel.
 5. Click **Save**
 6. Wait a few minutes for GitHub Pages to deploy
 
-Your site will be available at: `https://YOUR_USERNAME.github.io/YOUR_REPO/`
+Your site will be available at: `https://dnouvel.github.io/Word-Smith/`
 
-### Step 2: Update the Manifest
+### Step 2: Manifest Already Configured
 
-Edit `manifest.xml` and replace `YOUR_USERNAME` and `YOUR_REPO` with your actual values:
-
-- `YOUR_USERNAME` → your GitHub username
-- `YOUR_REPO` → your repository name
-
-For example, if your repo is `github.com/johnsmith/word-synonym-finder`:
-- Replace `YOUR_USERNAME` with `johnsmith`
-- Replace `YOUR_REPO` with `word-synonym-finder`
+The `manifest.xml` is already configured for this repository:
+- Source URL: `https://dnouvel.github.io/Word-Smith/taskpane.html`
 
 ### Step 3: Sideload the Add-in in Word
 

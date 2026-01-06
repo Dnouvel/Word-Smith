@@ -4,20 +4,17 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:type="TaskPaneApp">
 
-    <!-- INSTRUCTIONS: Replace YOUR_USERNAME and YOUR_REPO below with your actual GitHub username and repository name -->
-    <!-- Example: If your repo is github.com/johnsmith/word-synonym-finder, use johnsmith and word-synonym-finder -->
-
     <Id>a1b2c3d4-e5f6-7890-abcd-ef1234567890</Id>
     <Version>1.0.0.0</Version>
     <ProviderName>Synonym Finder</ProviderName>
     <DefaultLocale>en-US</DefaultLocale>
     <DisplayName DefaultValue="Synonym Finder"/>
     <Description DefaultValue="Find synonyms and related words as you type in Word"/>
-    <SupportUrl DefaultValue="https://YOUR_USERNAME.github.io/YOUR_REPO"/>
+    <SupportUrl DefaultValue="https://dnouvel.github.io/Word-Smith"/>
 
     <AppDomains>
         <AppDomain>https://api.datamuse.com</AppDomain>
-        <AppDomain>https://YOUR_USERNAME.github.io</AppDomain>
+        <AppDomain>https://dnouvel.github.io</AppDomain>
     </AppDomains>
 
     <Hosts>
@@ -25,7 +22,7 @@
     </Hosts>
 
     <DefaultSettings>
-        <SourceLocation DefaultValue="https://YOUR_USERNAME.github.io/YOUR_REPO/taskpane.html"/>
+        <SourceLocation DefaultValue="https://dnouvel.github.io/Word-Smith/taskpane.html"/>
     </DefaultSettings>
 
     <Permissions>ReadWriteDocument</Permissions>
