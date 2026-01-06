@@ -12,8 +12,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files from src directory
-app.use(express.static(path.join(__dirname, 'src')));
+// Serve static files from taskpane directory (for CSS/JS relative paths)
+app.use(express.static(path.join(__dirname, 'src', 'taskpane')));
+
+// Serve assets folder
+app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
 
 // Serve manifest.xml at root
 app.get('/manifest.xml', (req, res) => {

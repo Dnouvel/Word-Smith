@@ -13,7 +13,8 @@ word-synonym-addin/
     └── taskpane/
         ├── taskpane.html   # Task pane UI
         ├── taskpane.css    # Styling
-        └── taskpane.js     # Office.js logic & API calls
+        ├── taskpane.js     # Office.js logic & API calls
+        └── functions.html  # Required for Office add-in loading
 ```
 
 ## Features
@@ -30,24 +31,41 @@ Uses the free Datamuse API (https://www.datamuse.com/api/) - no API key required
 
 ## How to Use with MS Word
 
-### Sideloading for Testing
-1. Run the development server (starts automatically)
-2. Get the public URL where the add-in is hosted
-3. Update `manifest.xml` with your actual URLs (replace `localhost:5000`)
-4. In Word:
-   - Go to **Insert** > **My Add-ins** > **Upload My Add-in**
-   - Upload the `manifest.xml` file
-5. The add-in will appear in the Home tab
+### Step 1: Get Your Public URL
+After publishing/deploying, note your public HTTPS URL.
 
-### For Production
-- Deploy to HTTPS hosting (required for Office Add-ins)
-- Update manifest.xml with production URLs
-- Submit to Microsoft AppSource or deploy via SharePoint/Admin Center
+### Step 2: Update the Manifest
+Edit `manifest.xml` and replace the Replit URL with your deployed URL:
+- Update the `<SourceLocation>` URL
+- Update the `<SupportUrl>` URL
+- Update the `<AppDomain>` entries
 
-## Development
+### Step 3: Sideload the Add-in
+**For Word Desktop:**
+1. Open Word
+2. Go to **Insert** > **My Add-ins** > **Upload My Add-in**
+3. Browse and select your `manifest.xml` file
+4. Click **Upload**
+
+**For Word Online:**
+1. Open Word Online (office.com)
+2. Go to **Insert** > **Office Add-ins**
+3. Click **Upload My Add-in** in the top-right
+4. Upload your `manifest.xml` file
+
+### Step 4: Open the Side Panel
+Once sideloaded, the add-in opens automatically as a side panel.
+
+## Using the Add-in
+1. **Type a word** in the search box and click "Find"
+2. **Or select text** in your Word document and click "Get Selected Word"
+3. Browse the results in three categories: Synonyms, Related Words, Similar Sounding
+4. **Click any word** to replace your selected text in the document
+
+## Development Notes
 - Server runs on port 5000
-- Live reload not included - restart server after changes
-- Test UI directly by visiting the server URL in browser
+- Office.js warning in browser is normal (appears when not running inside Word)
+- The add-in requires HTTPS hosting - Replit handles this automatically
 
 ## Recent Changes
-- Initial creation (January 2026)
+- January 2026: Initial creation with simplified manifest for easier sideloading
