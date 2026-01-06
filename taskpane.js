@@ -171,10 +171,11 @@ async function fetchAllWordData(word) {
         similarRes.json()
     ]);
     
+    const synonymWords = synonyms.map(w => w.word);
     return {
         describing: describing.map(w => w.word),
-        synonyms: synonyms.map(w => w.word),
-        related: related.map(w => w.word).filter(w => !synonyms.some(s => s.word === w)),
+        synonyms: synonymWords,
+        related: related.map(w => w.word).filter(w => !synonymWords.includes(w)),
         similar: similar.map(w => w.word).filter(w => w !== word)
     };
 }
